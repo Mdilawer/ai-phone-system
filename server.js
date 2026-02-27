@@ -5,29 +5,39 @@ import cors from "cors";
 const app = express();
 app.use(cors());
 app.use(express.json());
+
 app.get("/", (req, res) => {
   res.send("Server is working");
 });
+
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
 app.post("/chat", async (req, res) => {
-  const { message } = req.body;
-
   try {
+    const { message } = req.body;
+
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
-        { role: "system", content: "You are a professional AI receptionist. Keep answers short." },
+        { role: "system", content: "You are a helpful AI assistant." },
         { role: "user", content: message }
       ],
     });
 
-    res.json({ reply: completion.choices[0].message.content });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.json({
+      reply: completion.choices[0].message.content
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Something went wrong" });
   }
 });
 
-app.listen(3000);
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+  console.log("Server running on port", PORT);
+});
